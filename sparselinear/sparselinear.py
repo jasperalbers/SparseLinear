@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 import torch
 import torch.nn as nn
+import torch_sparse
 
 
 def small_world_chunker(inputs, outputs, nnz):
@@ -429,13 +430,13 @@ class SparseLinear(nn.Module):
                 inputs = inputs.view(1, -1)
             inputs = inputs.flatten(end_dim=-2)
 
-            # output = torch_sparse.spmm(self.indices, self.weights, self.out_features, self.in_features, inputs.t()).t()
-            target = torch.sparse.FloatTensor(
-                self.indices,
-                self.weights,
-                torch.Size([self.out_features, self.in_features]),
-            ).to_dense()
-            output = torch.mm(target, inputs.t()).t()
+            output = torch_sparse.spmm(self.indices, self.weights, self.out_features, self.in_features, inputs.t()).t()
+            # target = torch.sparse.FloatTensor(
+            #     self.indices,
+            #     self.weights,
+            #     torch.Size([self.out_features, self.in_features]),
+            # ).to_dense()
+            # output = torch.mm(target, inputs.t()).t()
 
             if self.bias is not None:
                 output += self.bias
