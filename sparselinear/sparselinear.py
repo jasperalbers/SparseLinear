@@ -384,7 +384,7 @@ class SparseLinear(nn.Module):
         )
         return weight.coalesce().detach()
 
-    def forward(self, inputs):
+    def forward(self, inputs, tau_syn=None):
         if self.training and self.dynamic:
             self.itr_count += 1
         output_shape = list(inputs.shape)
@@ -429,6 +429,9 @@ class SparseLinear(nn.Module):
             if len(output_shape) == 1:
                 inputs = inputs.view(1, -1)
             inputs = inputs.flatten(end_dim=-2)
+
+            if tau_syn is not None:
+                self.weights = nn.Parameter(self.weights * tau_syn)
 
             output = torch_sparse.spmm(self.indices, self.weights, self.out_features, self.in_features, inputs.t()).t()
             # target = torch.sparse.FloatTensor(
